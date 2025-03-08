@@ -1,0 +1,19 @@
+* {
+    border: none;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+:root {
+    --dark-blue: rgb(5, 4, 22);
+    --grey: rgb(207, 207, 207);
+}
+
+body {
+    background-color: var(--dark-blue);
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
