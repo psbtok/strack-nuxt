@@ -1,16 +1,21 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
+
+interface MainState {
+  yearSelected: string;
+  activities: any[];
+}
 
 export const useMainStore = defineStore('main', {
-  state: () => ({
+  state: (): MainState => ({
     yearSelected: 'all',
-    tokenExpirationDate: 0,
+    activities: [],
   }),
   actions: {
     setYear(year: string) {
       this.yearSelected = year;
     },
-    setTokenExpirationDate(date: number) {
-      this.tokenExpirationDate = date;
+    setActivities(activities: any[]) {
+      this.activities = activities;
     },
   },
   persist: true,

@@ -5,37 +5,31 @@
       :key="area"
       :style="{
         gridArea: area,
-        text: tile.color,
+        color: tile.color,
         backgroundColor: tile.backgroundColor,
       }"
     >
-      <component :is="tile.component">
-      </component>
+      <component :is="tile.component" />
     </TileTemplateComponent>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
+import { defineComponent, shallowRef } from 'vue';
 import TileTemplateComponent from './TileTemplateComponent.vue';
 import DinstanceTileComponent from './DistanceTileComponent.vue';
-import { reAuthorize } from '../services/stravaService';
+import { useMainStore } from '../stores/main';
 
 export default defineComponent({
   components: {
     TileTemplateComponent,
     DinstanceTileComponent,
   },
-  setup() {
-    const client_id = '80748';
-    const client_secret = 'dd7bfd8626e77e41d351f7a76a85be61531a5ceb';
-    const refresh_token = '33d2cf7c17d96d25428a3190515a237c4e19f84b';
-    reAuthorize(
-      client_id,
-      client_secret,
-      refresh_token
-    )
-    const tileInfo = ref({
+  async setup() {
+    const store = useMainStore()
+    const posts = ref(store.activities)
+
+    const tileInfo = shallowRef({
       distance: {
         backgroundColor: '#D34E24',
         color: '#f6e2dd',
@@ -82,9 +76,10 @@ export default defineComponent({
         component: 'span',
       },
     });
-
+    
     return {
       tileInfo,
+      posts
     };
   },
 });

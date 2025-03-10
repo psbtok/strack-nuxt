@@ -9,4 +9,16 @@ export default defineNuxtConfig({
   css: [
     '@/assets/styles/global.css',
   ],
+  runtimeConfig: {
+    public: {
+      stravaClientId: process.env.STRAVA_CLIENT_ID,
+    },
+    private: {
+      stravaClientSecret: process.env.STRAVA_CLIENT_SECRET,
+      stravaRefreshToken: process.env.STRAVA_REFRESH_TOKEN,
+    },
+  },
+  serverMiddleware: [
+    '~/server/middleware/strava.ts',
+  ],
 })

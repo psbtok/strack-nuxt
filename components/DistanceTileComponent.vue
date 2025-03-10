@@ -1,5 +1,5 @@
 <template>
-    <span>{{ tokenExpirationDate }}</span>
+    <span>{{ activities.length }}</span>
     <span class="regular">km</span>
 </template>
 
@@ -11,10 +11,10 @@ export default {
   setup() {
     const store = useMainStore();
 
-    const tokenExpirationDate = computed(() => store.tokenExpirationDate);
+    const activities = computed(() => store.activities);
 
     return {
-      tokenExpirationDate
+      activities
     };
   }
 }
