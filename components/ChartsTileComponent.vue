@@ -20,6 +20,8 @@ import { useMainStore } from '~/stores/main';
 
 const store = useMainStore();
 const chartInstances = ref({});
+const lastChartUpdateTime = ref(0);
+const debounceTimer = ref(null);
 
 const RUN_TYPES = new Set(['run', 'walk', 'hike', 'trailrun']);
 const BIKE_TYPES = new Set(['ride', 'mountainbikeride']);
@@ -140,7 +142,7 @@ const createChart = (yLabel) => {
         maintainAspectRatio: false,
         responsive: true,
         animation: {
-          duration: 500,
+          duration: 200,
         },
         scales: {
           x: {
@@ -200,6 +202,7 @@ const createChart = (yLabel) => {
 onMounted(async () => {
   // Wait for next frame to ensure DOM is fully ready
   await new Promise(resolve => setTimeout(resolve, 0));
+  lastChartUpdateTime.value = Date.now();
   createChart('distance');
   createChart('speed');
 });
@@ -207,6 +210,40 @@ onMounted(async () => {
 watch(
   () => [store.activities, store.yearSelected, store.sportMode],
   async () => {
+    // Debounce: don't recreate charts more frequently than every 600ms (animation duration)
+    // This prevents updating charts while they're animating
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastChartUpdateTime.value;
+    
+    if (timeSinceLastUpdate < 400) {
+      console.log('Charts updated recently, scheduling retry after debounce period');
+      
+      // Clear existing timer if any
+      if (debounceTimer.value) {
+        clearTimeout(debounceTimer.value);
+      }
+      
+      // Schedule retry after remaining debounce time
+      const remainingTime = 600 - timeSinceLastUpdate;
+      debounceTimer.value = setTimeout(() => {
+        console.log('Debounce period finished, recreating charts');
+        lastChartUpdateTime.value = Date.now();
+        createChart('distance');
+        createChart('speed');
+        debounceTimer.value = null;
+      }, remainingTime);
+      
+      return;
+    }
+    
+    lastChartUpdateTime.value = now;
+    
+    // Clear any pending debounce timer
+    if (debounceTimer.value) {
+      clearTimeout(debounceTimer.value);
+      debounceTimer.value = null;
+    }
+    
     // Defer chart creation to next tick to allow DOM updates
     await new Promise(resolve => setTimeout(resolve, 0));
     createChart('distance');
@@ -216,6 +253,12 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  // Clear debounce timer
+  if (debounceTimer.value) {
+    clearTimeout(debounceTimer.value);
+    debounceTimer.value = null;
+  }
+  
   try {
     if (chartInstances.value.distance) {
       if (chartInstances.value.distance.ctx && chartInstances.value.distance.ctx.canvas) {
