@@ -263,6 +263,7 @@ onBeforeUnmount(() => {
   height: 100%;
   min-height: 0;
   position: relative;
+  padding: 8px;
 }
 
 .chart-container canvas {
