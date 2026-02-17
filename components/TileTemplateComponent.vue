@@ -1,6 +1,6 @@
 <template>
-  <div class="cell" ref="cellRef" :style="cellStyle">
-    <div class="cell__content" ref="contentRef">
+  <div class="cell" :class="{ 'cell--fill': props.disableAutoWidth }" ref="cellRef" :style="cellStyle">
+    <div class="cell__content" :class="{ 'cell__content--fill': props.disableAutoWidth }" ref="contentRef">
       <slot></slot>
     </div>
   </div>
@@ -9,12 +9,28 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
+const props = defineProps({
+  disableAutoWidth: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const cellRef = ref(null);
 const contentRef = ref(null);
 const trackedWidthPx = ref(null);
 let resizeObserver = null;
 
 const cellStyle = computed(() => {
+  if (props.disableAutoWidth) {
+    return {
+      width: '100%',
+      minWidth: '100%',
+      minHeight: 0,
+      height: '100%',
+    };
+  }
+
   if (trackedWidthPx.value === null) {
     return {
       width: '100%',
@@ -27,6 +43,11 @@ const cellStyle = computed(() => {
 });
 
 const updateTrackedWidth = () => {
+  if (props.disableAutoWidth) {
+    trackedWidthPx.value = null;
+    return;
+  }
+
   if (!cellRef.value || !contentRef.value) {
     return;
   }
@@ -45,6 +66,11 @@ const updateTrackedWidth = () => {
 
 onMounted(async () => {
   await nextTick();
+
+  if (props.disableAutoWidth) {
+    return;
+  }
+
   updateTrackedWidth();
 
   if (contentRef.value) {
@@ -80,11 +106,27 @@ onBeforeUnmount(() => {
     min-width: 100%;
     transition: width .3s ease;
     overflow: hidden;
+    min-height: 0;
+}
+
+.cell--fill {
+  justify-content: stretch;
+  align-items: stretch;
 }
 
 .cell__content {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
+}
+
+.cell__content--fill {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+  white-space: normal;
 }
 </style>

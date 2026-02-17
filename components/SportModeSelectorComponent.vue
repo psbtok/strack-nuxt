@@ -46,7 +46,10 @@ const selectOption = (index) => {
 <style scoped>
 .sports-selector {
   height: 156px;
-  width: 32px;
+  width: 64px;
+  min-width: 32px;
+  max-width: 32px;
+  flex: 0 0 64px;
   margin: 0;
   padding: 0;
   display: flex;
@@ -71,7 +74,7 @@ const selectOption = (index) => {
 .separator {
   text-transform: uppercase;
   padding: 6px 4px;
-  width: 100%;
+  width: 64px;
   letter-spacing: -0.5px;
   display: flex;
   justify-content: center;

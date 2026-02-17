@@ -23,6 +23,9 @@ export const TILE_COLORS = {
     backgroundColor: '#D34E24',
     fontColor: '#F6E2DD',
   },
+  charts: {
+    backgroundColor: 'rgb(184, 184, 170)',
+  },
   sportsSelector: {
     backgroundColor: '#3d348b',
   }

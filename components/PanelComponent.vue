@@ -3,6 +3,7 @@
     <TileTemplateComponent 
       v-for="(tile, area) in tileInfo"
       :key="area"
+      :disableAutoWidth="area === 'charts'"
       :style="{
         gridArea: area,
         color: tile.fontColor,
@@ -24,6 +25,7 @@ import FastestTileComponent from './FastestTileComponent.vue';
 import LongestTileComponent from './LongestTileComponent.vue';
 import CountTileComponent from './CountTileComponent.vue';
 import SportModeSelectorComponent from './SportModeSelectorComponent.vue';
+import ChartsTileComponent from './ChartsTileComponent.vue';
 import { TILE_COLORS } from '~/utils/tileColors';
 
 export default defineComponent({
@@ -36,6 +38,7 @@ export default defineComponent({
     LongestTileComponent,
     CountTileComponent,
     SportModeSelectorComponent,
+    ChartsTileComponent,
   },
   setup() {
     const tileInfo = shallowRef({
@@ -82,9 +85,9 @@ export default defineComponent({
         component: 'span',
       },
       charts: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
+        backgroundColor: TILE_COLORS.charts.backgroundColor,
         fontColor: TILE_COLORS.default.fontColor,
-        component: 'span',
+        component: ChartsTileComponent,
       },
       topDistance: {
         backgroundColor: TILE_COLORS.longest.backgroundColor,
@@ -117,7 +120,7 @@ export default defineComponent({
   height: calc(100vh - 120px);
   gap: 12px;
   display: grid;
-  grid-template-columns: auto auto auto auto auto 80px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) 80px;
   grid-template-rows: 80px 80px 80px 1fr 100px 100px;
   grid-auto-columns: 1fr;
   grid-auto-flow: row;
