@@ -18,6 +18,7 @@ const loadPosts = async () => {
 };
 
 onMounted(() => {
+  store.initializeSelectionFromStorage();
   loadPosts();
 })
 </script>

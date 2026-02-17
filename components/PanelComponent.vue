@@ -5,11 +5,11 @@
       :key="area"
       :style="{
         gridArea: area,
-        color: tile.color,
+        color: tile.fontColor,
         backgroundColor: tile.backgroundColor,
       }"
     >
-      <component :is="tile.component" />
+      <component :is="tile.component" v-bind="tile.componentProps || {}" />
     </TileTemplateComponent>
   </div>
 </template>
@@ -18,68 +18,74 @@
 import { defineComponent, shallowRef } from 'vue';
 import TileTemplateComponent from './TileTemplateComponent.vue';
 import DinstanceTileComponent from './DistanceTileComponent.vue';
-import { useMainStore } from '../stores/main';
+import CountTileComponent from './CountTileComponent.vue';
+import SportModeSelectorComponent from './SportModeSelectorComponent.vue';
+import { TILE_COLORS } from '~/utils/tileColors';
 
 export default defineComponent({
   components: {
     TileTemplateComponent,
     DinstanceTileComponent,
+    CountTileComponent,
+    SportModeSelectorComponent,
   },
-  async setup() {
-    const store = useMainStore()
-    const posts = ref(store.activities)
-
+  setup() {
     const tileInfo = shallowRef({
       distance: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: DinstanceTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.default.fontColor,
+        },
       },
       time: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
       speed: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
       sportsSelector: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
-        component: 'span',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
+        component: SportModeSelectorComponent,
       },
       sessionCount: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
-        component: 'span',
+        backgroundColor: TILE_COLORS.count.backgroundColor,
+        fontColor: TILE_COLORS.count.fontColor,
+        component: CountTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.count.fontColor,
+        },
       },
       map: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
       charts: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
       topDistance: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
       topSpeed: {
-        backgroundColor: '#D34E24',
-        color: '#f6e2dd',
+        backgroundColor: TILE_COLORS.default.backgroundColor,
+        fontColor: TILE_COLORS.default.fontColor,
         component: 'span',
       },
     });
     
     return {
       tileInfo,
-      posts
     };
   },
 });
@@ -96,9 +102,9 @@ export default defineComponent({
   grid-auto-columns: 1fr;
   grid-auto-flow: row;
   grid-template-areas:
-    "distance distance speed speed speed sportsSelector"
+    "sessionCount sessionCount speed speed speed sportsSelector"
     "time time speed speed speed sportsSelector"
-    "sessionCount sessionCount sessionCount map map map"
+    "distance distance distance map map map"
     "charts charts charts map map map"
     "charts charts charts topSpeed topSpeed topSpeed"
     "charts charts charts topDistance topDistance topDistance";

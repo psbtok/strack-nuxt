@@ -50,6 +50,16 @@ export default {
       for (let year = currentYear; year >= endYear; year--) {
         years.value.push(year.toString());
       }
+
+      const selectedYearIndex = years.value.findIndex((year) => year === store.yearSelected);
+      if (selectedYearIndex >= 0) {
+        middleIndex.value = selectedYearIndex;
+        offsetLeft.value = `calc(${selectedYearIndex * offsetStep}px)`;
+      } else {
+        store.setYear(years.value[1] || years.value[0]);
+        middleIndex.value = years.value[1] ? 1 : 0;
+        offsetLeft.value = `calc(${middleIndex.value * offsetStep}px)`;
+      }
     });
 
     const selectYear = (index) => {

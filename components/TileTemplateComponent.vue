@@ -1,17 +1,74 @@
 <template>
-    <div class="cell">
-        <slot></slot>
+  <div class="cell" ref="cellRef" :style="cellStyle">
+    <div class="cell__content" ref="contentRef">
+      <slot></slot>
     </div>
+  </div>
 </template>
-  
-  <script>
-  export default {
-    name: 'TileTemplateComponent'
+
+<script setup>
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+
+const cellRef = ref(null);
+const contentRef = ref(null);
+const trackedWidthPx = ref(null);
+let resizeObserver = null;
+
+const cellStyle = computed(() => {
+  if (trackedWidthPx.value === null) {
+    return {
+      width: '100%',
+    };
   }
-  </script>
-  
-  <style scoped>
-  .cell {
+
+  return {
+    width: `${trackedWidthPx.value}px`,
+  };
+});
+
+const updateTrackedWidth = () => {
+  if (!cellRef.value || !contentRef.value) {
+    return;
+  }
+
+  const contentWidth = contentRef.value.getBoundingClientRect().width;
+  const cellStyles = window.getComputedStyle(cellRef.value);
+  const paddingLeft = parseFloat(cellStyles.paddingLeft || '0');
+  const paddingRight = parseFloat(cellStyles.paddingRight || '0');
+
+  const nextWidth = Math.ceil(contentWidth + paddingLeft + paddingRight);
+
+  if (trackedWidthPx.value === null || Math.abs(trackedWidthPx.value - nextWidth) >= 1) {
+    trackedWidthPx.value = nextWidth;
+  }
+};
+
+onMounted(async () => {
+  await nextTick();
+  updateTrackedWidth();
+
+  if (contentRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateTrackedWidth();
+    });
+
+    resizeObserver.observe(contentRef.value);
+  }
+
+  window.addEventListener('resize', updateTrackedWidth);
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
+
+  window.removeEventListener('resize', updateTrackedWidth);
+});
+</script>
+
+<style scoped>
+.cell {
     box-sizing: border-box;
     border-radius: 16px;
     display: flex;
@@ -19,7 +76,15 @@
     justify-content: center;
     align-items: center;
     font-size: 1.25em;
-    transition-duration: .3s;
-  }
-  </style>
-  
+    width: 100%;
+    min-width: 100%;
+    transition: width .3s ease;
+    overflow: hidden;
+}
+
+.cell__content {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+</style>
