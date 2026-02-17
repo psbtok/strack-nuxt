@@ -1,5 +1,5 @@
 <template>
-	<span :style="{ color: fontColor }"><span :style="{ color: fontColor, fontWeight: 700 }">{{ count }}</span> {{ recordLabel }}</span>
+	<span :style="{ color: fontColor }"><span :style="{ color: fontColor, fontWeight: 700, fontSize: '1.25em' }">{{ count }}</span> {{ recordLabel }}</span>
 </template>
 
 <script>

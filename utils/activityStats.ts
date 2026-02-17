@@ -19,10 +19,12 @@ export interface ActivityStats {
   fastest: {
     speedKmh: number;
     timeSeconds: number;
+    distanceKm: number;
   } | null;
   longest: {
     speedKmh: number;
     timeSeconds: number;
+    distanceKm: number;
   } | null;
 }
 
@@ -119,6 +121,7 @@ export function calculateStatsForSelection(
       fastest = {
         speedKmh: activitySpeed,
         timeSeconds: activityTime,
+        distanceKm: activityDistance,
       };
     }
 
@@ -127,6 +130,7 @@ export function calculateStatsForSelection(
       longest = {
         speedKmh: activitySpeed,
         timeSeconds: activityTime,
+        distanceKm: activityDistance,
       };
     }
   }

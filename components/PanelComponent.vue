@@ -18,6 +18,10 @@
 import { defineComponent, shallowRef } from 'vue';
 import TileTemplateComponent from './TileTemplateComponent.vue';
 import DinstanceTileComponent from './DistanceTileComponent.vue';
+import TimeTileComponent from './TimeTileComponent.vue';
+import SpeedTileComponent from './SpeedTileComponent.vue';
+import FastestTileComponent from './FastestTileComponent.vue';
+import LongestTileComponent from './LongestTileComponent.vue';
 import CountTileComponent from './CountTileComponent.vue';
 import SportModeSelectorComponent from './SportModeSelectorComponent.vue';
 import { TILE_COLORS } from '~/utils/tileColors';
@@ -26,6 +30,10 @@ export default defineComponent({
   components: {
     TileTemplateComponent,
     DinstanceTileComponent,
+    TimeTileComponent,
+    SpeedTileComponent,
+    FastestTileComponent,
+    LongestTileComponent,
     CountTileComponent,
     SportModeSelectorComponent,
   },
@@ -40,14 +48,20 @@ export default defineComponent({
         },
       },
       time: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
-        fontColor: TILE_COLORS.default.fontColor,
-        component: 'span',
+        backgroundColor: TILE_COLORS.time.backgroundColor,
+        fontColor: TILE_COLORS.time.fontColor,
+        component: TimeTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.time.fontColor,
+        },
       },
       speed: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
-        fontColor: TILE_COLORS.default.fontColor,
-        component: 'span',
+        backgroundColor: TILE_COLORS.speed.backgroundColor,
+        fontColor: TILE_COLORS.speed.fontColor,
+        component: SpeedTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.speed.fontColor,
+        },
       },
       sportsSelector: {
         backgroundColor: TILE_COLORS.default.backgroundColor,
@@ -73,14 +87,20 @@ export default defineComponent({
         component: 'span',
       },
       topDistance: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
-        fontColor: TILE_COLORS.default.fontColor,
-        component: 'span',
+        backgroundColor: TILE_COLORS.longest.backgroundColor,
+        fontColor: TILE_COLORS.longest.fontColor,
+        component: LongestTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.longest.fontColor,
+        },
       },
       topSpeed: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
-        fontColor: TILE_COLORS.default.fontColor,
-        component: 'span',
+        backgroundColor: TILE_COLORS.fastest.backgroundColor,
+        fontColor: TILE_COLORS.fastest.fontColor,
+        component: FastestTileComponent,
+        componentProps: {
+          fontColor: TILE_COLORS.fastest.fontColor,
+        },
       },
     });
     

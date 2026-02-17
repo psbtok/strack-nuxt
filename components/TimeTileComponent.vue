@@ -1,5 +1,5 @@
 <template>
-  <span :style="textStyle"><span :style="valueStyle">{{ distanceKm }}</span> <span class="regular" :style="textStyle">km</span></span>
+  <span :style="textStyle"><span :style="valueStyle">{{ timeFormatted }}</span> <span class="regular" :style="textStyle">hours</span></span>
 </template>
 
 <script>
@@ -16,12 +16,25 @@ export default {
   setup(props) {
     const store = useMainStore();
 
-    const distanceKm = computed(() => store.selectedStats.distanceKm.toFixed(1));
+    const formatTimeFromSeconds = (totalSeconds) => {
+      const hours = totalSeconds / 3600;
+      return hours.toFixed(1);
+    };
+
+    const timeFormatted = computed(() => {
+      let stats = store.fallbackStats;
+      if (store.activities && store.activities.length > 0) {
+        stats = store.selectedStats;
+      }
+      const seconds = stats?.timeSeconds || 0;
+      return formatTimeFromSeconds(seconds);
+    });
+
     const textStyle = computed(() => ({ color: props.fontColor || 'inherit' }));
     const valueStyle = computed(() => ({ color: props.fontColor || 'inherit', fontWeight: 700, fontSize: '1.25em' }));
 
     return {
-      distanceKm,
+      timeFormatted,
       textStyle,
       valueStyle,
     };
