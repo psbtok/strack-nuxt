@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3';
-import { isTokenExpired, getActivities } from '~/server/utils/cache';
+import { isTokenExpired, getActivities, getStravaToken } from '~/server/utils/cache';
 import { addRecentPosts, reauthorize, initializePostList } from '../services/stravaService';
 
 export default defineEventHandler(async () => {
@@ -9,10 +9,15 @@ export default defineEventHandler(async () => {
       await addRecentPosts()      
     } catch (error) {
       console.error('Error:', error);
+      return;
     }
   }
 
   if (!getActivities().length) {
-    initializePostList()
+    try {
+      await initializePostList()
+    } catch (error) {
+      console.error('Error initializing Strava activities:', error);
+    }
   }
 });
