@@ -64,7 +64,7 @@ export default defineComponent({
         },
       },
       sportsSelector: {
-        backgroundColor: TILE_COLORS.default.backgroundColor,
+        backgroundColor: TILE_COLORS.sportsSelector.backgroundColor,
         fontColor: TILE_COLORS.default.fontColor,
         component: SportModeSelectorComponent,
       },
