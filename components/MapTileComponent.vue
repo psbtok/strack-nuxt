@@ -25,9 +25,8 @@ const mapContainer = ref(null);
 const mapInstance = ref(null);
 const hasInitialized = ref(false);
 
-const mapboxToken =
-  'pk.eyJ1IjoicGV0b3NicmF0b2siLCJhIjoiY2wxdWtnNjM5MDB2ZzNkbDNzNzV2MThnbCJ9.--UWf-pthCKugxhxF4kmbQ';
-const mapboxStyle = 'mapbox://styles/petosbratok/cl1ukjde8000514ltcfj80eto';
+const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+const mapboxStyle = import.meta.env.VITE_MAPBOX_STYLE;
 
 const toggleMinimized = () => {
   isMinimized.value = !isMinimized.value;
