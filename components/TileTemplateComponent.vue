@@ -1,5 +1,14 @@
 <template>
-  <div class="cell" :class="{ 'cell--fill': props.disableAutoWidth }" ref="cellRef" :style="cellStyle">
+  <div
+    class="cell"
+    :class="{
+      'cell--fill': props.disableAutoWidth,
+      'cell--overflow': props.allowOverflow,
+      'cell--no-padding': props.disablePadding,
+    }"
+    ref="cellRef"
+    :style="cellStyle"
+  >
     <div class="cell__content" :class="{ 'cell__content--fill': props.disableAutoWidth }" ref="contentRef">
       <slot></slot>
     </div>
@@ -11,6 +20,14 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
   disableAutoWidth: {
+    type: Boolean,
+    default: false,
+  },
+  allowOverflow: {
+    type: Boolean,
+    default: false,
+  },
+  disablePadding: {
     type: Boolean,
     default: false,
   },
@@ -34,11 +51,13 @@ const cellStyle = computed(() => {
   if (trackedWidthPx.value === null) {
     return {
       width: '100%',
+      minWidth: 0,
     };
   }
 
   return {
     width: `${trackedWidthPx.value}px`,
+    minWidth: `${trackedWidthPx.value}px`,
   };
 });
 
@@ -109,9 +128,17 @@ onBeforeUnmount(() => {
     min-height: 0;
 }
 
+.cell--overflow {
+  overflow: visible;
+}
+
 .cell--fill {
   justify-content: stretch;
   align-items: stretch;
+}
+
+.cell--no-padding {
+  padding: 0;
 }
 
 .cell__content {

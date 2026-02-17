@@ -63,9 +63,10 @@ const isYearMatch = (activity) => {
 };
 
 const createChart = (yLabel) => {
-  const sessions = (store.activities || []).filter((activity) => {
-    return isModeMatch(activity) && isYearMatch(activity);
-  });
+  try {
+    const sessions = (store.activities || []).filter((activity) => {
+      return isModeMatch(activity) && isYearMatch(activity);
+    });
   
   const processedActivities = sessions.map(activity => {
     const distanceKm = (activity.distance || 0) / 1000;
@@ -98,70 +99,140 @@ const createChart = (yLabel) => {
   });
 
   const ctx = document.getElementById(`${yLabel}-chart`);
-  if (!ctx) return;
+  if (!ctx || !(ctx instanceof HTMLCanvasElement)) {
+    console.warn(`Canvas element not found or invalid for ${yLabel}-chart`);
+    return;
+  }
+
+  const canvasCtx = ctx.getContext('2d');
+  if (!canvasCtx) {
+    console.warn(`Failed to get 2D context for ${yLabel}-chart`);
+    return;
+  }
 
   // Destroy existing chart if it exists
   if (chartInstances.value[yLabel]) {
-    chartInstances.value[yLabel].destroy();
+    try {
+      chartInstances.value[yLabel].destroy();
+    } catch (e) {
+      console.warn(`Failed to destroy previous ${yLabel} chart:`, e);
+    }
   }
 
-  const chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: valueArray,
-      datasets: [
-        {
-          label: yLabel === 'distance' ? 'Distance (km)' : 'Speed (km/h)',
-          data: dataArray,
-          fill: false,
-          borderColor: '#586F6B',
-          cubicInterpolationMode: 'monotone',
-          tension: 0.4,
+  let chart = null;
+  try {
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: valueArray,
+        datasets: [
+          {
+            label: yLabel === 'distance' ? 'Distance (km)' : 'Speed (km/h)',
+            data: dataArray,
+            fill: false,
+            borderColor: '#586F6B',
+            cubicInterpolationMode: 'monotone',
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: {
+          duration: 500,
         },
-      ],
-    },
-    options: {
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          display: false,
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            ticks: {
+              color: '#586F6B',
+              fontWeight: 'bold',
+            },
+          },
         },
-        y: {
-          ticks: {
-            color: '#586F6B',
-            fontWeight: 'bold',
+        elements: {
+          point: {
+            borderWidth: 0,
+            radius: 10,
+            backgroundColor: 'rgba(0,0,0,0)',
           },
         },
       },
-      elements: {
-        point: {
-          borderWidth: 0,
-          radius: 10,
-          backgroundColor: 'rgba(0,0,0,0)',
+      plugins: [
+        {
+          id: 'contextLossHandler',
+          afterDatasetsDraw(chart) {
+            const ctx = chart.ctx;
+            if (!ctx || !ctx.canvas || !ctx.canvas.getContext('2d')) {
+              console.warn(`Context lost during ${yLabel} chart draw, destroying chart`);
+              chart.destroy();
+            }
+          },
         },
-      },
-    },
-  });
+      ],
+    });
+  } catch (chartError) {
+    console.error(`Failed to create Chart.js instance for ${yLabel}:`, chartError);
+    return;
+  }
+
+  if (!chart) {
+    console.warn(`Chart instance is null for ${yLabel}`);
+    return;
+  }
 
   chartInstances.value[yLabel] = chart;
+  } catch (error) {
+    console.error(`Error creating ${yLabel} chart:`, error);
+    if (chart) {
+      try {
+        chart.destroy();
+      } catch (e) {
+        // silent fail
+      }
+    }
+  }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Wait for next frame to ensure DOM is fully ready
+  await new Promise(resolve => setTimeout(resolve, 0));
   createChart('distance');
   createChart('speed');
 });
 
-watch(() => [store.activities, store.yearSelected, store.sportMode], () => {
-  createChart('distance');
-  createChart('speed');
-}, { deep: true });
+watch(
+  () => [store.activities, store.yearSelected, store.sportMode],
+  async () => {
+    // Defer chart creation to next tick to allow DOM updates
+    await new Promise(resolve => setTimeout(resolve, 0));
+    createChart('distance');
+    createChart('speed');
+  },
+  { deep: true }
+);
 
 onBeforeUnmount(() => {
-  if (chartInstances.value.distance) {
-    chartInstances.value.distance.destroy();
+  try {
+    if (chartInstances.value.distance) {
+      if (chartInstances.value.distance.ctx && chartInstances.value.distance.ctx.canvas) {
+        chartInstances.value.distance.destroy();
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to destroy distance chart:', e);
   }
-  if (chartInstances.value.speed) {
-    chartInstances.value.speed.destroy();
+  try {
+    if (chartInstances.value.speed) {
+      if (chartInstances.value.speed.ctx && chartInstances.value.speed.ctx.canvas) {
+        chartInstances.value.speed.destroy();
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to destroy speed chart:', e);
   }
 });
 </script>

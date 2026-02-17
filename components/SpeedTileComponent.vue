@@ -42,6 +42,7 @@ export default {
 
 <style scoped>
 .speed-tile {
+  width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
