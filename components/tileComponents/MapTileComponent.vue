@@ -109,7 +109,18 @@ const addPolylinesToMap = (map, polylines) => {
 };
 
 const initMapOnce = (polylines) => {
-  if (hasInitialized.value || !import.meta.client || !mapContainer.value) {
+  if (!import.meta.client || !mapContainer.value || !polylines.length) {
+    return;
+  }
+
+  // If map already exists and polylines significantly increased, clear and reinitialize
+  if (hasInitialized.value && mapInstance.value) {
+    mapInstance.value.remove();
+    mapInstance.value = null;
+    hasInitialized.value = false;
+  }
+
+  if (hasInitialized.value) {
     return;
   }
 
@@ -170,22 +181,24 @@ onMounted(() => {
   // Add resize listener
   window.addEventListener('resize', handleWindowResize);
 
-  const existingPolylines = collectPolylines();
-  if (existingPolylines.length) {
-    initMapOnce(existingPolylines);
-    return;
-  }
-
-  const stop = watch(
+  let previousLength = 0;
+  watch(
     () => activities.value?.length || 0,
-    () => {
+    (newLength) => {
       const polylines = collectPolylines();
       if (!polylines.length) {
         return;
       }
+      
+      // Reinitialize if activities significantly increased (e.g., from cache 1 to full API load 700+)
+      if (previousLength > 0 && newLength > previousLength * 10) {
+        hasInitialized.value = false;
+      }
+      
       initMapOnce(polylines);
-      stop();
+      previousLength = newLength;
     },
+    { immediate: true }
   );
 });
 

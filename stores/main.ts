@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { calculateStatsForSelection, type SportMode } from '~/utils/activityStats';
+import { preCalculateAllStats, type SportMode, type PreCalculatedStats, type ActivityStats } from "~/utils/activityStats";
 
 const YEAR_STORAGE_KEY = 'selectedYear';
 const SPORT_MODE_STORAGE_KEY = 'selectedSportMode';
@@ -34,10 +34,20 @@ function isValidSportMode(value: string | null): value is SportMode {
   return value === 'run' || value === 'bike' || value === 'all';
 }
 
+const emptyStats: ActivityStats = {
+  count: 0,
+  timeSeconds: 0,
+  distanceKm: 0,
+  speedKmh: 0,
+  fastest: null,
+  longest: null,
+};
+
 interface MainState {
   yearSelected: string;
   sportMode: SportMode;
   activities: any[];
+  preCalculatedStats: PreCalculatedStats;
 }
 
 export const useMainStore = defineStore('main', {
@@ -45,10 +55,18 @@ export const useMainStore = defineStore('main', {
     yearSelected: getInitialYear(),
     sportMode: getInitialSportMode(),
     activities: [],
+    preCalculatedStats: {},
   }),
   getters: {
-    selectedStats(state) {
-      return calculateStatsForSelection(state.activities, state.yearSelected, state.sportMode);
+    selectedStats(state): ActivityStats {
+      const yearStats = state.preCalculatedStats[state.yearSelected];
+      if (!yearStats) {
+        return emptyStats;
+      }
+      return yearStats[state.sportMode] || emptyStats;
+    },
+    fallbackStats(): ActivityStats {
+      return emptyStats;
     },
   },
   actions: {
@@ -83,6 +101,8 @@ export const useMainStore = defineStore('main', {
     },
     setActivities(activities: any[]) {
       this.activities = activities;
+      // Pre-calculate all year/sport combinations when activities are set
+      this.preCalculatedStats = preCalculateAllStats(activities);
     },
   },
   persist: true,

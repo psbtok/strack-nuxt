@@ -1,6 +1,8 @@
 <template>
-    <PanelComponent></PanelComponent>
-    <YearSelectorComponent></YearSelectorComponent>
+    <ClientOnly>
+      <PanelComponent></PanelComponent>
+      <YearSelectorComponent></YearSelectorComponent>
+    </ClientOnly>
 </template>  
 
 <script>

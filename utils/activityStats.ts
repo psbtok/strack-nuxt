@@ -144,3 +144,39 @@ export function calculateStatsForSelection(
     longest,
   };
 }
+
+export type PreCalculatedStats = {
+  [year: string]: {
+    [mode: string]: ActivityStats;
+  };
+};
+
+export function preCalculateAllStats(activities: ActivityLike[]): PreCalculatedStats {
+  const result: PreCalculatedStats = {};
+
+  // Get all unique years from activities
+  const years = new Set<string>();
+  years.add('all');
+  
+  for (const activity of activities) {
+    const dateValue = activity.start_date_local || activity.start_date;
+    if (dateValue) {
+      const year = new Date(dateValue).getFullYear();
+      if (!Number.isNaN(year)) {
+        years.add(String(year));
+      }
+    }
+  }
+
+  // Calculate stats for each year and sport mode combination
+  const sportModes: SportMode[] = ['all', 'run', 'bike'];
+  
+  for (const year of years) {
+    result[year] = {};
+    for (const mode of sportModes) {
+      result[year][mode] = calculateStatsForSelection(activities, year, mode);
+    }
+  }
+
+  return result;
+}
