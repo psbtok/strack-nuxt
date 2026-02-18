@@ -132,7 +132,7 @@ export default defineComponent({
   --left-speed-col-width: calc(var(--half-width) - (2 * var(--left-main-col-width)));
   --map-flex-col-width: calc((var(--half-width) - var(--selector-width)) / 2);
   padding: 12px;
-  height: calc(100vh - 120px);
+  height: calc(100dvh - 68px);
   gap: var(--panel-gap);
   display: grid;
   position: relative;

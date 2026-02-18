@@ -192,8 +192,6 @@ export default {
   position: fixed;
   height: 60px;
   bottom: 0px;
-  padding: 8px 0;
-  margin-bottom: 8px;
   padding-left: calc(50% - 55.8px);
   padding-right: 2000px;
   display: flex;
