@@ -128,7 +128,8 @@ export default defineComponent({
   --panel-gap: 12px;
   --content-width: calc(100% - (5 * var(--panel-gap)));
   --half-width: calc(var(--content-width) / 2);
-  --left-col-width: calc(var(--half-width) / 3);
+  --left-main-col-width: calc(var(--half-width) * 0.38);
+  --left-speed-col-width: calc(var(--half-width) - (2 * var(--left-main-col-width)));
   --map-flex-col-width: calc((var(--half-width) - var(--selector-width)) / 2);
   padding: 12px;
   height: calc(100vh - 120px);
@@ -136,9 +137,9 @@ export default defineComponent({
   display: grid;
   position: relative;
   grid-template-columns:
-    minmax(0, var(--left-col-width))
-    minmax(0, var(--left-col-width))
-    minmax(0, var(--left-col-width))
+    minmax(0, var(--left-main-col-width))
+    minmax(0, var(--left-main-col-width))
+    minmax(0, var(--left-speed-col-width))
     minmax(0, var(--map-flex-col-width))
     minmax(0, var(--map-flex-col-width))
     var(--selector-width);
