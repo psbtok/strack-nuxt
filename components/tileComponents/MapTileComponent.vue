@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
   position: relative;
   margin-top: -186px;
   width: 100vw;
-  height: calc(100vh - 80px);
+  height: calc(97dvh);
   transition-duration: 450ms;
 }
 

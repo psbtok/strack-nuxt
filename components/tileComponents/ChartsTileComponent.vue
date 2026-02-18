@@ -30,6 +30,14 @@ const CHART_FADE_STEP_MS = 150;
 const RUN_TYPES = new Set(['run', 'walk', 'hike', 'trailrun']);
 const BIKE_TYPES = new Set(['ride', 'mountainbikeride']);
 
+const getChartFontScale = () => {
+  if (!import.meta.client) {
+    return 1;
+  }
+
+  return window.innerWidth < 500 ? 0.85 : 1;
+};
+
 const getSportKey = (activity) => {
   const normalizedSportType = String(activity.sport_type || '').toLowerCase();
   const normalizedType = String(activity.type || '').toLowerCase();
@@ -154,6 +162,10 @@ const createChart = (yLabel, processedActivities = []) => {
   let chart = null;
 
   try {
+  const fontScale = getChartFontScale();
+  const axisFontSize = Math.max(10, Math.round(12 * fontScale));
+  const legendFontSize = Math.max(10, Math.round(12 * fontScale));
+
   const sortedSessions = [...processedActivities].sort((a, b) => {
     const aVal = yLabel === 'distance' ? a.distance : a.speed;
     const bVal = yLabel === 'distance' ? b.distance : b.speed;
@@ -207,6 +219,15 @@ const createChart = (yLabel, processedActivities = []) => {
         maintainAspectRatio: false,
         responsive: true,
         animation: false,
+        plugins: {
+          legend: {
+            labels: {
+              font: {
+                size: legendFontSize,
+              },
+            },
+          },
+        },
         scales: {
           x: {
             display: false,
@@ -214,6 +235,9 @@ const createChart = (yLabel, processedActivities = []) => {
           y: {
             ticks: {
               color: '#586F6B',
+              font: {
+                size: axisFontSize,
+              },
               fontWeight: 'bold',
             },
           },
