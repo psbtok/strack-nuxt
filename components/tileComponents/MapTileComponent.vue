@@ -1,5 +1,9 @@
 <template>
-  <div :class="['map-container', isMinimized ? '' : 'expanded']">
+  <div
+    ref="mapWrapper"
+    :class="['map-container', isMinimized ? '' : 'expanded']"
+    :style="expandedStyle"
+  >
     <div ref="mapContainer" id="map" class="map"></div>
   </div>
   <button :class="['toggle-button', isMinimized ? '' : 'active']" @click="toggleMinimized">
@@ -10,7 +14,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { storeToRefs } from 'pinia';
@@ -21,14 +25,32 @@ const store = useMainStore();
 const { activities } = storeToRefs(store);
 
 const isMinimized = ref(true);
+const mapWrapper = ref(null);
 const mapContainer = ref(null);
 const mapInstance = ref(null);
 const hasInitialized = ref(false);
+const expandedMarginLeft = ref('0px');
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const mapboxStyle = import.meta.env.VITE_MAPBOX_STYLE;
 
+const expandedStyle = computed(() => {
+  if (isMinimized.value) {
+    return undefined;
+  }
+
+  return {
+    marginLeft: expandedMarginLeft.value,
+  };
+});
+
 const toggleMinimized = () => {
+  if (isMinimized.value && mapWrapper.value) {
+    const { left } = mapWrapper.value.getBoundingClientRect();
+    expandedMarginLeft.value = `${10 - left}px`;
+  }
+
+  store.setMapExpanded(isMinimized.value);
   isMinimized.value = !isMinimized.value;
 };
 
@@ -205,6 +227,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Remove resize listener
   window.removeEventListener('resize', handleWindowResize);
+  store.setMapExpanded(false);
   
   mapInstance.value?.remove();
   mapInstance.value = null;
@@ -228,10 +251,9 @@ onBeforeUnmount(() => {
 
 .expanded {
   position: relative;
-  margin-left: calc(-50vw + 5px);
-  margin-top: -190px;
+  margin-top: -186px;
   width: 100vw;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 80px);
   transition-duration: 450ms;
 }
 

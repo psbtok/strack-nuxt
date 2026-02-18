@@ -1,11 +1,11 @@
 <template>
-  <div class="year-slider">
+  <div class="year-slider" :class="{ 'year-slider--hidden': mapExpanded }">
     <div
       class="year-slider__track"
       :style="{ left: offsetLeft }"
       :class="{ 'year-slider__track--animated': animationOn }"
       @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
+      @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
       @mousedown="onMouseDown"
       @mousemove="onMouseMove"
@@ -20,7 +20,7 @@
           'year-slider__item--active': index === middleIndex,
           'year-slider__item--active-search': index === middleIndex && !isTouching
         }"
-        @click="selectYear(index)"
+        @click="onYearClick(index)"
       >
         <span>{{ year }}</span>
       </div>
@@ -30,12 +30,14 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useMainStore } from '~/stores/main';
 
 export default {
   name: 'YearSelectorComponent',
   setup() {
     const store = useMainStore();
+    const { mapExpanded } = storeToRefs(store);
     const animationOn = ref(false);
     const offsetStep = -79.6;
     const offsetLeft = ref('0px');
@@ -44,6 +46,8 @@ export default {
     const touchStartX = ref(0);
     const touchCurrentX = ref(0);
     const touchStartOffset = ref(0);
+    const didDrag = ref(false);
+    const suppressClickUntil = ref(0);
     const middleIndex = ref(1);
     const years = ref(['all']);
     const endYear = 2019;
@@ -85,6 +89,7 @@ export default {
     const onTouchStart = (event) => {
       if (animationOn.value) return;
       isTouching.value = true;
+      didDrag.value = false;
       touchStartX.value = event.touches[0].clientX;
       touchCurrentX.value = touchStartX.value;
       touchStartOffset.value = extractNumericValue(offsetLeft.value);
@@ -95,6 +100,9 @@ export default {
 
       touchCurrentX.value = event.touches[0].clientX;
       const deltaX = touchCurrentX.value - touchStartX.value;
+      if (Math.abs(deltaX) > 4) {
+        didDrag.value = true;
+      }
       let newOffset = touchStartOffset.value + deltaX;
       newOffset = getConstrainedOffset(newOffset);
       offsetLeft.value = `calc(${newOffset}px)`;
@@ -104,6 +112,9 @@ export default {
 
     const onTouchEnd = () => {
       if (isTouching.value) {
+        if (didDrag.value) {
+          suppressClickUntil.value = Date.now() + 250;
+        }
         selectYear(middleIndex.value);
       }
       isTouching.value = false;
@@ -112,6 +123,7 @@ export default {
     const onMouseDown = (event) => {
       if (animationOn.value) return;
       isMouseDown.value = true;
+      didDrag.value = false;
       touchStartX.value = event.clientX;
       touchCurrentX.value = touchStartX.value;
       touchStartOffset.value = extractNumericValue(offsetLeft.value);
@@ -123,6 +135,9 @@ export default {
 
       touchCurrentX.value = event.clientX;
       const deltaX = touchCurrentX.value - touchStartX.value;
+      if (Math.abs(deltaX) > 4) {
+        didDrag.value = true;
+      }
       let newOffset = touchStartOffset.value + deltaX;
       newOffset = getConstrainedOffset(newOffset);
       offsetLeft.value = `calc(${newOffset}px)`;
@@ -132,10 +147,21 @@ export default {
 
     const onMouseUp = () => {
       if (isMouseDown.value && isTouching.value) {
+        if (didDrag.value) {
+          suppressClickUntil.value = Date.now() + 250;
+        }
         selectYear(middleIndex.value);
       }
       isMouseDown.value = false;
       isTouching.value = false;
+    };
+
+    const onYearClick = (index) => {
+      if (Date.now() < suppressClickUntil.value) {
+        return;
+      }
+
+      selectYear(index);
     };
 
     const updateMiddleIndex = (newOffset) => {
@@ -162,11 +188,13 @@ export default {
     };
 
     return {
+      mapExpanded,
       animationOn,
       offsetLeft,
       middleIndex,
       years,
       isTouching,
+      onYearClick,
       selectYear,
       onTouchStart,
       onTouchMove,
@@ -186,6 +214,16 @@ export default {
   align-items: center;
   flex-direction: column;
   overflow: hidden;
+  transition: opacity 300ms;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.year-slider--hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .year-slider__track {
@@ -200,6 +238,9 @@ export default {
   overflow: hidden;
   background: var(--dark-blue);
   cursor: grab;
+  touch-action: pan-x;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -218,6 +259,7 @@ export default {
   cursor: pointer;
   transition: 600ms;
   transition-property: all;
+  -webkit-user-select: none;
   user-select: none;
   text-align: center;
 }
@@ -236,6 +278,8 @@ export default {
 
 .year-slider__item span {
   text-transform: capitalize;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .year-slider__track--animated {

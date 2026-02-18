@@ -21,7 +21,11 @@ import { useMainStore } from '~/stores/main';
 const store = useMainStore();
 const chartInstances = ref({});
 const lastChartUpdateTime = ref(0);
-const debounceTimer = ref(null);
+const animationTimer = ref(null);
+const isAnimating = ref(false);
+const pendingChartRefresh = ref(false);
+
+const CHART_FADE_STEP_MS = 150;
 
 const RUN_TYPES = new Set(['run', 'walk', 'hike', 'trailrun']);
 const BIKE_TYPES = new Set(['ride', 'mountainbikeride']);
@@ -64,30 +68,92 @@ const isYearMatch = (activity) => {
   return String(year) === store.yearSelected;
 };
 
-const createChart = (yLabel) => {
-  try {
-    const sessions = (store.activities || []).filter((activity) => {
-      return isModeMatch(activity) && isYearMatch(activity);
-    });
-  
-  const processedActivities = sessions.map(activity => {
+const getProcessedActivities = () => {
+  const sessions = (store.activities || []).filter((activity) => {
+    return isModeMatch(activity) && isYearMatch(activity);
+  });
+
+  return sessions.map((activity) => {
     const distanceKm = (activity.distance || 0) / 1000;
     const timeSeconds = activity.moving_time || activity.elapsed_time || 0;
     let speedKmh = 0;
-    
+
     if (timeSeconds > 0 && distanceKm > 0) {
       speedKmh = distanceKm / (timeSeconds / 3600);
     } else if (activity.average_speed) {
       speedKmh = Number(activity.average_speed) * 3.6;
     }
-    
+
     return {
       distance: distanceKm,
       speed: speedKmh,
       date: activity.start_date_local || activity.start_date || new Date().toISOString(),
     };
   });
+};
 
+const triggerCanvasFade = (yLabel, animationClass) => {
+  const canvas = document.getElementById(`${yLabel}-chart`);
+  if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+    return;
+  }
+
+  canvas.classList.remove('chart-fade-enter');
+  canvas.classList.remove('chart-fade-exit');
+  canvas.classList.remove('chart-fade-enter');
+  void canvas.offsetWidth;
+  canvas.classList.add(animationClass);
+};
+
+const finalizeAnimationWindow = () => {
+  isAnimating.value = false;
+
+  if (pendingChartRefresh.value) {
+    pendingChartRefresh.value = false;
+    requestChartRefresh();
+  }
+};
+
+const renderCharts = () => {
+  isAnimating.value = true;
+
+  triggerCanvasFade('distance', 'chart-fade-exit');
+  triggerCanvasFade('speed', 'chart-fade-exit');
+
+  if (animationTimer.value) {
+    clearTimeout(animationTimer.value);
+  }
+
+  animationTimer.value = setTimeout(() => {
+    lastChartUpdateTime.value = Date.now();
+    const processedActivities = getProcessedActivities();
+    createChart('distance', processedActivities);
+    createChart('speed', processedActivities);
+
+    triggerCanvasFade('distance', 'chart-fade-enter');
+    triggerCanvasFade('speed', 'chart-fade-enter');
+
+    animationTimer.value = setTimeout(() => {
+      animationTimer.value = null;
+      finalizeAnimationWindow();
+    }, CHART_FADE_STEP_MS);
+  }, CHART_FADE_STEP_MS);
+};
+
+const requestChartRefresh = () => {
+  if (isAnimating.value) {
+    pendingChartRefresh.value = true;
+    return;
+  }
+
+  pendingChartRefresh.value = false;
+  renderCharts();
+};
+
+const createChart = (yLabel, processedActivities = []) => {
+  let chart = null;
+
+  try {
   const sortedSessions = [...processedActivities].sort((a, b) => {
     const aVal = yLabel === 'distance' ? a.distance : a.speed;
     const bVal = yLabel === 'distance' ? b.distance : b.speed;
@@ -103,13 +169,13 @@ const createChart = (yLabel) => {
   const ctx = document.getElementById(`${yLabel}-chart`);
   if (!ctx || !(ctx instanceof HTMLCanvasElement)) {
     console.warn(`Canvas element not found or invalid for ${yLabel}-chart`);
-    return;
+    return false;
   }
 
   const canvasCtx = ctx.getContext('2d');
   if (!canvasCtx) {
     console.warn(`Failed to get 2D context for ${yLabel}-chart`);
-    return;
+    return false;
   }
 
   // Destroy existing chart if it exists
@@ -121,7 +187,6 @@ const createChart = (yLabel) => {
     }
   }
 
-  let chart = null;
   try {
     chart = new Chart(ctx, {
       type: 'line',
@@ -141,9 +206,7 @@ const createChart = (yLabel) => {
       options: {
         maintainAspectRatio: false,
         responsive: true,
-        animation: {
-          duration: 300,
-        },
+        animation: false,
         scales: {
           x: {
             display: false,
@@ -178,15 +241,16 @@ const createChart = (yLabel) => {
     });
   } catch (chartError) {
     console.error(`Failed to create Chart.js instance for ${yLabel}:`, chartError);
-    return;
+    return false;
   }
 
   if (!chart) {
     console.warn(`Chart instance is null for ${yLabel}`);
-    return;
+    return false;
   }
 
   chartInstances.value[yLabel] = chart;
+  return true;
   } catch (error) {
     console.error(`Error creating ${yLabel} chart:`, error);
     if (chart) {
@@ -196,42 +260,32 @@ const createChart = (yLabel) => {
         // silent fail
       }
     }
+    return false;
   }
 };
 
 onMounted(async () => {
   // Wait for next frame to ensure DOM is fully ready
   await new Promise(resolve => setTimeout(resolve, 0));
-  lastChartUpdateTime.value = Date.now();
-  createChart('distance');
-  createChart('speed');
+  requestChartRefresh();
 });
 
 watch(
   () => [store.activities, store.yearSelected, store.sportMode],
-  async () => {
-    // Clear any pending timer
-    if (debounceTimer.value) {
-      clearTimeout(debounceTimer.value);
-    }
-    
-    // Wait for year selector animation to finish before recalculating
-    debounceTimer.value = setTimeout(() => {
-      lastChartUpdateTime.value = Date.now();
-      createChart('distance');
-      createChart('speed');
-      debounceTimer.value = null;
-    }, 250);
+  () => {
+    requestChartRefresh();
   },
-  { deep: true }
+  { deep: false }
 );
 
 onBeforeUnmount(() => {
-  // Clear debounce timer
-  if (debounceTimer.value) {
-    clearTimeout(debounceTimer.value);
-    debounceTimer.value = null;
+  if (animationTimer.value) {
+    clearTimeout(animationTimer.value);
+    animationTimer.value = null;
   }
+
+  isAnimating.value = false;
+  pendingChartRefresh.value = false;
   
   try {
     if (chartInstances.value.distance) {
@@ -287,5 +341,32 @@ onBeforeUnmount(() => {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+
+.chart-container canvas.chart-fade-enter {
+  animation: chart-canvas-fade-in 150ms ease-out;
+}
+
+.chart-container canvas.chart-fade-exit {
+  animation: chart-canvas-fade-out 150ms ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes chart-canvas-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chart-canvas-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 </style>

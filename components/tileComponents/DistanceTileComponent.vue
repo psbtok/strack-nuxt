@@ -1,5 +1,8 @@
 <template>
-  <span :style="textStyle"><span :style="valueStyle">{{ distanceKm }}</span> <span class="regular" :style="textStyle">km</span></span>
+  <div class="distance-tile" :style="blockStyle">
+    <span class="value">{{ distanceKm }}</span>
+    <span class="regular">km</span>
+  </div>
 </template>
 
 <script>
@@ -15,22 +18,46 @@ export default {
   },
   setup(props) {
     const store = useMainStore();
+    const WIDTH_PER_CHAR = 12.6;
+    const MIN_WIDTH = 30;
 
     const distanceKm = computed(() => store.selectedStats.distanceKm.toFixed(1));
-    const textStyle = computed(() => ({ color: props.fontColor || 'inherit' }));
-    const valueStyle = computed(() => ({ color: props.fontColor || 'inherit', fontWeight: 700, fontSize: '1.25em' }));
+    const blockStyle = computed(() => {
+      const valueText = `${distanceKm.value || '-'} km`;
+      return {
+        color: props.fontColor || 'inherit',
+        fontSize: '1.25em',
+        width: `${Math.max(valueText.length * WIDTH_PER_CHAR, MIN_WIDTH)}px`,
+      };
+    });
 
     return {
       distanceKm,
-      textStyle,
-      valueStyle,
+      blockStyle,
     };
   }
 }
 </script>
 
-<style>
+<style scoped>
+.distance-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  transition: width .3s ease;
+}
+
+.value {
+  display: inline-block;
+  text-align: center;
+  font-weight: 700;
+}
+
 .regular {
   display: inline-block;
+  text-align: center;
+  font-weight: 400;
 }
 </style>

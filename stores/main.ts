@@ -48,6 +48,7 @@ interface MainState {
   sportMode: SportMode;
   activities: any[];
   preCalculatedStats: PreCalculatedStats;
+  mapExpanded: boolean;
 }
 
 export const useMainStore = defineStore('main', {
@@ -56,6 +57,7 @@ export const useMainStore = defineStore('main', {
     sportMode: getInitialSportMode(),
     activities: [],
     preCalculatedStats: {},
+    mapExpanded: false,
   }),
   getters: {
     selectedStats(state): ActivityStats {
@@ -88,12 +90,20 @@ export const useMainStore = defineStore('main', {
       localStorage.setItem(SPORT_MODE_STORAGE_KEY, resolvedMode);
     },
     setYear(year: string) {
+      if (this.yearSelected === year) {
+        return;
+      }
+
       this.yearSelected = year;
       if (import.meta.client) {
         localStorage.setItem(YEAR_STORAGE_KEY, year);
       }
     },
     setSportMode(mode: SportMode) {
+      if (this.sportMode === mode) {
+        return;
+      }
+
       this.sportMode = mode;
       if (import.meta.client) {
         localStorage.setItem(SPORT_MODE_STORAGE_KEY, mode);
@@ -104,6 +114,8 @@ export const useMainStore = defineStore('main', {
       // Pre-calculate all year/sport combinations when activities are set
       this.preCalculatedStats = preCalculateAllStats(activities);
     },
+    setMapExpanded(isExpanded: boolean) {
+      this.mapExpanded = isExpanded;
+    },
   },
-  persist: true,
 });

@@ -136,13 +136,7 @@ export default defineComponent({
   gap: var(--panel-gap);
   display: grid;
   position: relative;
-  grid-template-columns:
-    minmax(0, var(--left-main-col-width))
-    minmax(0, var(--left-main-col-width))
-    minmax(0, var(--left-speed-col-width))
-    minmax(0, var(--map-flex-col-width))
-    minmax(0, var(--map-flex-col-width))
-    var(--selector-width);
+  grid-template-columns: auto auto auto auto auto 80px;
   grid-template-rows: 80px 80px 80px 1fr 100px 100px;
   grid-auto-columns: 1fr;
   grid-auto-flow: row;

@@ -1,7 +1,7 @@
 <template>
-  <div class="activity-tile">
-    <div class="activity-value" :style="valueStyle">{{ longestDistance }} km</div>
-    <div class="activity-label" :style="labelStyle">at {{ longestSpeed }} km/h</div>
+  <div class="activity-tile" :style="blockStyle">
+    <div class="activity-value">{{ longestDistance }} km</div>
+    <div class="activity-label">at {{ longestSpeed }} km/h</div>
   </div>
 </template>
 
@@ -18,6 +18,8 @@ export default {
   },
   setup(props) {
     const store = useMainStore();
+    const WIDTH_PER_CHAR = 12.6;
+    const MIN_WIDTH = 50;
 
     const longestDistance = computed(() => {
       let stats = store.fallbackStats;
@@ -37,14 +39,21 @@ export default {
       return speed.toFixed(1);
     });
 
-    const valueStyle = computed(() => ({ color: props.fontColor || 'inherit', fontWeight: 700, fontSize: '1.25em' }));
-    const labelStyle = computed(() => ({ color: props.fontColor || 'inherit' }));
+    const valueText = computed(() => `${longestDistance.value} km`);
+    const labelText = computed(() => `at ${longestSpeed.value} km/h`);
+
+    const blockStyle = computed(() => {
+      const longestTextLength = Math.max(valueText.value.length, labelText.value.length);
+      return {
+        color: props.fontColor || 'inherit',
+        width: `${Math.max(longestTextLength * WIDTH_PER_CHAR, MIN_WIDTH)}px`,
+      };
+    });
 
     return {
       longestDistance,
       longestSpeed,
-      valueStyle,
-      labelStyle,
+      blockStyle,
     };
   }
 }
@@ -57,14 +66,18 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  text-align: center;
+  transition: width .3s ease;
 }
 
 .activity-value {
   font-size: 1.25em;
+  font-weight: 700;
 }
 
 .activity-label {
     margin-top: -4px;
     font-size: 0.85em;
+    font-weight: 400;
 }
 </style>

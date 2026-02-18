@@ -123,7 +123,8 @@ onBeforeUnmount(() => {
     font-size: 1.25em;
     width: 100%;
     min-width: 100%;
-    transition: width .3s ease;
+    transition: width .3s ease, min-width .3s ease;
+    will-change: width, min-width;
     overflow: hidden;
     min-height: 0;
     user-select: none;
