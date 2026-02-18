@@ -18,7 +18,7 @@ export default {
 	},
 	setup(props) {
 		const store = useMainStore();
-		const WIDTH_PER_CHAR = 30;
+		const WIDTH_PER_CHAR = 32;
 		const MIN_WIDTH = 30;
 		const count = computed(() => store.selectedStats.count);
 		const recordLabel = computed(() => (count.value === 1 ? 'record' : 'records'));
