@@ -37,7 +37,7 @@ const loadPosts = async () => {
   const data = await getActivities();
   if (data.length) {
     store.setActivities(data);
-    console.log(data[0])
+    console.log(data.length ? 'Received activities data from Strava API' : 'No activities data received from Strava API');
   }
   
   // Calculate elapsed time

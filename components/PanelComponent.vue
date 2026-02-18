@@ -24,15 +24,15 @@
 <script>
 import { defineComponent, shallowRef } from 'vue';
 import TileTemplateComponent from './TileTemplateComponent.vue';
-import DinstanceTileComponent from './DistanceTileComponent.vue';
-import TimeTileComponent from './TimeTileComponent.vue';
-import SpeedTileComponent from './SpeedTileComponent.vue';
-import FastestTileComponent from './FastestTileComponent.vue';
-import LongestTileComponent from './LongestTileComponent.vue';
-import CountTileComponent from './CountTileComponent.vue';
-import SportModeSelectorComponent from './SportModeSelectorComponent.vue';
-import ChartsTileComponent from './ChartsTileComponent.vue';
-import MapTileComponent from './MapTileComponent.vue';
+import DinstanceTileComponent from './tileComponents/DistanceTileComponent.vue';
+import TimeTileComponent from './tileComponents/TimeTileComponent.vue';
+import SpeedTileComponent from './tileComponents/SpeedTileComponent.vue';
+import FastestTileComponent from './tileComponents/FastestTileComponent.vue';
+import LongestTileComponent from './tileComponents/LongestTileComponent.vue';
+import CountTileComponent from './tileComponents/CountTileComponent.vue';
+import SportModeSelectorComponent from './tileComponents/SportModeSelectorComponent.vue';
+import ChartsTileComponent from './tileComponents/ChartsTileComponent.vue';
+import MapTileComponent from './tileComponents/MapTileComponent.vue';
 import { TILE_COLORS } from '~/utils/tileColors';
 
 export default defineComponent({

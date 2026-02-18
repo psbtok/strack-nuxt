@@ -142,7 +142,7 @@ const createChart = (yLabel) => {
         maintainAspectRatio: false,
         responsive: true,
         animation: {
-          duration: 200,
+          duration: 300,
         },
         scales: {
           x: {

@@ -69,6 +69,10 @@ const selectOption = (index) => {
   align-items: center;
   transition-duration: 0.3s;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .separator {

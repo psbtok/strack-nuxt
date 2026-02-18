@@ -126,6 +126,8 @@ onBeforeUnmount(() => {
     transition: width .3s ease;
     overflow: hidden;
     min-height: 0;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .cell--overflow {
