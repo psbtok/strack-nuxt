@@ -18,7 +18,7 @@ export default {
   },
   setup(props) {
     const store = useMainStore();
-    const WIDTH_PER_CHAR = 12.6;
+    const WIDTH_PER_CHAR = 30;
     const MIN_WIDTH = 30;
 
     const formatTimeFromSeconds = (totalSeconds) => {
